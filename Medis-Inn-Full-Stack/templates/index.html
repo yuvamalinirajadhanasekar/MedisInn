@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Medis-Inn | Nearby Pharmacy Finder</title>
+<link rel="stylesheet" href="{{ url_for('static',filename='style.css') }}">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<section id="authScreen" class="auth-wrap">
+  <div class="auth-art"><div class="logo light"><b>✚</b> Medis-Inn</div><div class="hero"><small>YOUR NEIGHBOURHOOD HEALTH COMPANION</small><h1>Find your medicine.<br><em>Find your pharmacy.</em></h1><p>Search nearby pharmacies, check demo stock and prices, and open directions in one place.</p><div class="ticks">✓ Nearby pharmacy map<br>✓ Stock colour indicators<br>✓ Route & travel estimates</div></div><div class="orb"></div></div>
+  <div class="auth-panel"><div class="logo"><b>✚</b> Medis-Inn</div><small class="eyebrow">WELCOME</small><h2>Sign in to continue</h2><p class="muted">Choose your account type.</p>
+    <div class="roles"><button class="role active" data-role="customer">👤 Customer</button><button class="role" data-role="owner">🏥 Pharmacy owner</button></div>
+    <form id="loginForm"><label>Email address</label><input type="email" id="email" required placeholder="you@example.com"><label>Password</label><input type="password" id="password" required placeholder="At least 8 characters"><button class="btn full">Sign in →</button></form>
+    <div class="demo"><b>Demo accounts</b><br>Customer: <code>customer@medisinn.demo</code> / <code>Customer123!</code><br>Owner: <code>owner@medisinn.demo</code> / <code>Owner123!</code></div>
+    <details><summary>Create a new account</summary><form id="registerForm"><label>Name</label><input id="regName" required><label>Email</label><input id="regEmail" type="email" required><label>Password (8+ characters)</label><input id="regPassword" type="password" minlength="8" required><button class="btn full">Create account</button></form></details>
+    <p id="authMessage" class="message"></p>
+  </div>
+</section>
+<div id="app" class="app hidden">
+ <aside class="sidebar"><div class="logo"><b>✚</b> Medis-Inn</div><div class="userbox"><div class="avatar" id="avatar">MI</div><div><strong id="userName">User</strong><small id="userRole">Customer</small></div></div>
+ <nav><button class="nav active" data-page="home">⌂ &nbsp; Overview</button><button class="nav" data-page="search">⌕ &nbsp; Find medicine</button><button class="nav" data-page="map">◎ &nbsp; Pharmacy map</button><button class="nav owner-only hidden" data-page="inventory">▤ &nbsp; Manage inventory</button></nav><div class="side-bottom"><p>💚 <b>Need help?</b><br><small>Find a nearby pharmacy in a few steps.</small></p><button id="logout" class="logout">↪ Sign out</button></div></aside>
+ <main><header class="topbar"><div><small class="eyebrow" id="crumb">MEDIS-INN / OVERVIEW</small><h2 id="pageTitle">Good day 👋</h2></div><div class="head-actions"><span class="location" id="locationLabel">Location not set</span><button class="outline" id="locate">◎ Use my location</button></div></header>
+ <section class="page active" id="page-home"><div class="banner"><small class="eyebrow">YOUR HEALTH, CLOSER</small><h2>Medicine search made simple.</h2><p>Search for a medicine and explore pharmacy prices, sample stock levels and directions.</p><button class="btn white" data-goto="search">Find a medicine →</button></div><div class="section-title"><div><h3>Stock status guide</h3><p>Understand the colour labels</p></div></div><div class="legend-grid"><div class="legend"><i class="dot high"></i><div><b>High stock</b><small>Green · 20+ units</small></div></div><div class="legend"><i class="dot medium"></i><div><b>Medium stock</b><small>Yellow · 6–19 units</small></div></div><div class="legend"><i class="dot low"></i><div><b>Low stock</b><small>Red · 0–5 units</small></div></div></div><div class="warning">⚠️ <div><b>Prototype data notice</b><p>Seeded pharmacy data is for demonstration only. It is not live stock or medical advice.</p></div></div></section>
+ <section class="page" id="page-search"><div class="intro"><small class="eyebrow">MEDICINE DIRECTORY</small><h2>Find your medicine</h2><p>Search the current database by medicine name. Results show available demo listings only.</p></div><form id="searchForm" class="search"><span>⌕</span><input id="medicine" placeholder="Search medicine (e.g. Paracetamol)" required><button class="btn">Search</button></form><div class="result-head"><div><b id="resultTitle">Nearby pharmacy results</b><p id="resultSub">Enter a medicine name to search the database.</p></div><button class="outline" id="sortBtn">↕ Sort: nearest</button></div><div id="results" class="results"><div class="empty"><h3>What medicine do you need?</h3><p>Search to view matching database listings.</p></div></div></section>
+ <section class="page" id="page-map"><div class="intro"><small class="eyebrow">LOCAL NAVIGATION</small><h2>Pharmacy map</h2><p>Map markers are colour-coded by distance. Choose a result to preview a destination.</p></div><div class="map-legend"><span><i class="dot high"></i> Near · under 2 km</span><span><i class="dot medium"></i> Medium · 2–5 km</span><span><i class="dot low"></i> Far · over 5 km</span></div><div id="map"></div><div class="map-foot"><div><b id="mapName">Choose a pharmacy</b><p id="mapDesc">Select a pharmacy from search results.</p></div><button id="directions" class="btn" disabled>Open directions ↗</button></div></section>
+ <section class="page" id="page-inventory"><div class="intro"><small class="eyebrow">PHARMACY OWNER SPACE</small><h2>Manage inventory</h2><p>Add or update the medicines stocked by your pharmacy. Changes are saved in SQLite.</p></div><form id="inventoryForm" class="inventory-form"><div><label>Medicine name</label><input id="invName" required placeholder="Medicine name"></div><div><label>Strength / variant</label><input id="invStrength" placeholder="e.g. 500 mg"></div><div><label>Price (₹)</label><input id="invPrice" type="number" min="0" step="0.01" required></div><div><label>Stock quantity</label><input id="invStock" type="number" min="0" step="1" required></div><button class="btn">Save inventory</button></form><p id="invMessage" class="message"></p><div class="result-head"><b>Your database inventory</b><button class="outline" id="refreshInventory">Refresh</button></div><div id="ownerListings" class="results"></div></section>
+ <footer>Medis-Inn · EDI full-stack prototype <span>Live pharmacy integration requires participating pharmacies and verified data.</span></footer>
+ </main>
+</div>
+<div id="toast" class="toast"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script><script src="{{ url_for('static',filename='app.js') }}"></script>
+<script src="app.js"></script>
+</body></html>
